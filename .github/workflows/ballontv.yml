@@ -1,0 +1,35 @@
+name: BALLONTV - Multi-Stream Stealth
+
+on:
+  workflow_dispatch: # تشغيل يدوي بضغطة زر
+
+jobs:
+  dual_stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-liberation
+
+      - name: Start BALLONTV Double Broadcast
+        run: |
+          # قائمة المدن المغربية للشريط المتحرك
+          CITIES="Casablanca - Rabat - Fes - Tangier - Marrakesh - Agadir - Sale - Meknes - Oujda - Kenitra - Tetouan - Safi - Temara - Mohammedia - Khouribga - Beni Mellal - El Jadida - Taza - Nador - Settat"
+          
+          while true; do
+            ffmpeg -re -i "http://135.125.109.73:9000/Alwan%20Sport%201%20HD%20VIP%20Arb_.m3u8" \
+            -vf "split[bg][fg]; \
+                 [bg]scale=1280:720,boxblur=30:30,hue=s=0:b=-0.2[bg_final]; \
+                 [fg]scale=1050:-1,border=2:2:white[fg_framed]; \
+                 [bg_final][fg_framed]overlay=(W-w)/2:(H-h)/2, \
+                 drawtext=text='BALLONTV':fontcolor=0xFFD700:fontsize=50:x=50:y=50:shadowcolor=black:shadowx=3:shadowy=3, \
+                 drawtext=text='LIVE':fontcolor=red:fontsize=25:x=50:y=105:box=1:boxcolor=white@0.8:boxborderw=5, \
+                 drawtext=text='$CITIES':fontcolor=white:fontsize=22:y=h-35:x=w-mod(t*90\,w+tw), \
+                 hue=s=1.2:b=0.05" \
+            -af "asetrate=44100*1.01,atempo=1/1.01" \
+            -c:v libx264 -preset superfast -b:v 2500k -pix_fmt yuv420p -g 30 -c:a aac -b:a 128k -f tee \
+            "[f=flv]rtmps://live-api-s.facebook.com:443/rtmp/FB-122122401357122511-1-Ab6SISX3ImJQaZ_3O0hSnRDC|[f=flv]rtmps://live-api-s.facebook.com:443/rtmp/FB-122122401357122511-0-Ab5r4Qj7sIQw478EZ5a7Ipc1" \
+            || echo "Reconnecting..."
+            sleep 5
+          done
