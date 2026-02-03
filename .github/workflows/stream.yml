@@ -1,29 +1,36 @@
-name: Facebook Stealth Stream
+name: BALLONTV - Advanced Anti-Bot Stream
 
 on:
   workflow_dispatch:
 
 jobs:
-  stream_job:
+  ultra_stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Install FFmpeg
+      - name: Install Advanced Multimedia Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg fonts-liberation
 
-      - name: Start Stealth Broadcast
+      - name: Start BALLONTV Professional Broadcast
         run: |
+          # قائمة المدن المغربية للتحرك أسفل الشاشة
+          CITIES="Casablanca - Rabat - Fes - Tangier - Marrakesh - Agadir - Sale - Meknes - Oujda - Kenitra - Tetouan - Safi - Temara - Mohammedia - Khouribga - Beni Mellal - El Jadida - Taza - Nador - Settat"
+          
           while true; do
             ffmpeg -re -i "http://135.125.109.73:9000/Alwan%20Sport%201%20HD%20VIP%20Arb_.m3u8" \
             -vf "split[bg][fg]; \
-                 [bg]scale=1280:720,boxblur=20:20[bgblur]; \
-                 [fg]scale=1000:-1[fgscale]; \
-                 [bgblur][fgscale]overlay=(W-w)/2:(H-h)/2, \
-                 hue=s=1.1:b=0.1, \
-                 drawtext=text='LIVE - MOROCCO - %{localtime}':fontcolor=white@0.4:fontsize=20:x=w-tw-20:y=20" \
-            -c:v libx264 -preset superfast -b:v 2000k -maxrate 2500k -bufsize 5000k \
-            -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
+                 [bg]scale=1280:720,boxblur=30:30,hue=s=0:b=-0.2[bg_final]; \
+                 [fg]scale=1050:-1,border=2:2:white[fg_framed]; \
+                 [bg_final][fg_framed]overlay=(W-w)/2:(H-h)/2, \
+                 drawtext=text='BALLONTV':fontcolor=0xFFD700:fontsize=50:fontfile=/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf:x=50:y=50:shadowcolor=black:shadowx=3:shadowy=3, \
+                 drawtext=text='LIVE':fontcolor=red:fontsize=25:x=50:y=105:box=1:boxcolor=white@0.8:boxborderw=5, \
+                 drawtext=text='$CITIES':fontcolor=white:fontsize=22:y=h-35:x=w-mod(t*90\,w+tw), \
+                 hue=s=1.2:b=0.05, \
+                 curves=m='0/0 0.5/0.51 1/1'" \
+            -af "asetrate=44100*1.01,atempo=1/1.01,highpass=f=200,lowpass=f=3000" \
+            -c:v libx264 -preset superfast -tune zerolatency -b:v 2500k -maxrate 3000k -bufsize 6000k \
+            -pix_fmt yuv420p -g 30 -c:a aac -b:a 128k -ar 44100 \
             -f flv "rtmps://live-api-s.facebook.com:443/rtmp/FB-122122401357122511-1-Ab6SISX3ImJQaZ_3O0hSnRDC" \
             || echo "Reconnecting..."
             sleep 5
