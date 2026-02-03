@@ -1,0 +1,25 @@
+name: Facebook Direct Stream
+
+on:
+  workflow_dispatch: # تشغيل يدوي بضغطة زر
+
+jobs:
+  stream_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Streaming to Facebook
+        run: |
+          # حلقة تكرار لإعادة البث تلقائياً في حال انقطع الرابط
+          while true; do
+            ffmpeg -re -i "http://135.125.109.73:9000/Alwan%20Sport%201%20HD%20VIP%20Arb_.m3u8" \
+            -c:v copy \
+            -c:a aac \
+            -f flv "rtmps://live-api-s.facebook.com:443/rtmp/FB-122122401357122511-1-Ab6SISX3ImJQaZ_3O0hSnRDC" \
+            || echo "انقطع الاتصال، جاري المحاولة مرة أخرى بعد 5 ثوانٍ..."
+            sleep 5
+          done
